@@ -1,20 +1,19 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, Link } from "react-router-dom";
+import React from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-export default function UserDashboard() {
+export default function MyPapers() {
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const papers = [
-    { title: "Deep Learning for NLP", author: "Smith et al.", tags: "AI, NLP", year: 2023 },
-    { title: "Blockchain in Education", author: "Doe et al.", tags: "Blockchain, EdTech", year: 2022 },
-    { title: "Climate Change Analytics", author: "Rao et al.", tags: "Environment, Data", year: 2024 },
-    { title: "Quantum Computing Trends", author: "Patel et al.", tags: "Quantum, ML", year: 2023 },
+    { title: "AI in Healthcare", author: "Dr. John Smith", tags: "AI, Health", year: 2023 },
+    { title: "Ethics of Machine Learning", author: "Jane Doe", tags: "ML, Ethics", year: 2022 },
+    { title: "Sustainable IoT Systems", author: "A. Patel", tags: "IoT, GreenTech", year: 2024 },
+    { title: "Quantum Network Security", author: "S. Mehta", tags: "Quantum, Security", year: 2025 },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#E7ECEF] via-[#A3CEF1] to-[#6096BA] text-[#274C77] p-6 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#E7ECEF] via-[#A3CEF1] to-[#6096BA] text-[#274C77] p-6">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
@@ -33,7 +32,7 @@ export default function UserDashboard() {
             Search
           </button>
           <button
-            onClick={() => setMenuOpen(true)}
+            onClick={() => navigate("/menu")}
             className="ml-3 text-2xl font-bold text-[#274C77] hover:text-[#6096BA] transition"
           >
             ☰
@@ -48,7 +47,7 @@ export default function UserDashboard() {
         transition={{ duration: 0.6 }}
         className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 flex-1 overflow-x-auto"
       >
-        <h2 className="text-2xl font-bold text-center mb-6">Recent Papers</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">My Papers</h2>
 
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">
@@ -72,7 +71,10 @@ export default function UserDashboard() {
                   <td className="p-3">{paper.tags}</td>
                   <td className="p-3">{paper.year}</td>
                   <td className="p-3 text-center">
-                    <button className="px-4 py-2 rounded-xl bg-[#A3CEF1] hover:bg-[#6096BA] text-[#274C77] font-semibold transition-all">
+                    <button
+                      onClick={() => navigate(`/papers/${idx}`)}
+                      className="px-4 py-2 rounded-xl bg-[#A3CEF1] hover:bg-[#6096BA] text-[#274C77] font-semibold transition-all"
+                    >
                       View Detail
                     </button>
                   </td>
@@ -83,56 +85,14 @@ export default function UserDashboard() {
         </div>
 
         <div className="mt-8 flex justify-center">
-          <button 
-            onClick={() => navigate('/add-paper')}
+          <button
+            onClick={() => navigate("/add-paper")}
             className="px-6 py-3 bg-[#274C77] hover:bg-[#6096BA] text-white rounded-full font-semibold shadow-md transition-all"
           >
             ➕ Add Paper
           </button>
         </div>
       </motion.section>
-
-      {/* Sidebar with Backdrop */}
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            {/* Backdrop - Click outside to close */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            />
-            
-            {/* Sidebar */}
-            <motion.aside
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ duration: 0.3 }}
-              className="fixed top-0 right-0 h-full w-64 backdrop-blur-2xl bg-white/30 border-l border-white/40 shadow-2xl flex flex-col p-6 text-[#274C77] z-50"
-            >
-              <div className="mb-10">
-                <div className="font-bold text-lg">Menu</div>
-              </div>
-
-              <nav className="flex flex-col gap-6">
-                <Link to="/my-papers" className="text-lg font-medium hover:text-[#6096BA] transition">
-                  My Papers
-                </Link>
-                <a href="#" className="text-lg font-medium hover:text-[#6096BA] transition">
-                  Settings
-                </a>
-                <a href="#" className="text-lg font-medium text-red-500 hover:text-red-400 transition mt-auto">
-                  Logout
-                </a>
-              </nav>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

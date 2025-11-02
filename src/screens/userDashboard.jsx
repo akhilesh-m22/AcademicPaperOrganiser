@@ -22,7 +22,12 @@ export default function UserDashboard() {
         transition={{ duration: 0.5 }}
         className="flex justify-between items-center backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-md px-6 py-4 mb-8"
       >
-        <div className="font-bold text-2xl">📚 Academic Paper Organizer</div>
+        <button 
+          onClick={() => navigate('/')}
+          className="font-bold text-2xl hover:text-[#6096BA] transition cursor-pointer"
+        >
+          📚 Academic Paper Organizer
+        </button>
         <div className="flex items-center gap-3">
           <input
             type="text"
@@ -72,7 +77,10 @@ export default function UserDashboard() {
                   <td className="p-3">{paper.tags}</td>
                   <td className="p-3">{paper.year}</td>
                   <td className="p-3 text-center">
-                    <button className="px-4 py-2 rounded-xl bg-[#A3CEF1] hover:bg-[#6096BA] text-[#274C77] font-semibold transition-all">
+                    <button 
+                      onClick={() => navigate(`/papers/${idx}`)}
+                      className="px-4 py-2 rounded-xl bg-[#A3CEF1] hover:bg-[#6096BA] text-[#274C77] font-semibold transition-all"
+                    >
                       View Detail
                     </button>
                   </td>

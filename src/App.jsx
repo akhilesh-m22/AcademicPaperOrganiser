@@ -4,6 +4,7 @@ import LoginScreen from "./screens/loginScreen";
 import UserDashboard from "./screens/userDashboard";
 import AddPaper from "./screens/addPaperScreen";
 import MyPapers from "./screens/userPapersScreen";
+import PaperDetails from "./screens/paperDetailsScreen";
 
 function App() {
     return (
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/register" element={<RegistrationScreen />} />
                 <Route path="/add-paper" element={<AddPaper />} />
                 <Route path="/my-papers" element={<MyPapers />} />
+                <Route path="/papers/:id" element={<PaperDetails />} />
             </Routes>
         </BrowserRouter>
     );

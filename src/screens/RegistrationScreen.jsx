@@ -1,185 +1,72 @@
-import { useState } from "react";
+import React from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-function RegistrationScreen() {
-    const [formData, setFormData] = useState({
-        username: "",
-        password: "",
-        confirmPassword: "",
-        fullName: "",
-        institutionName: "",
-        role: "",
-    });
+export default function UserRegistration() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#E7ECEF] via-[#A3CEF1] to-[#6096BA] p-6">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-10 w-full max-w-md text-[#274C77]"
+      >
+        <h1 className="text-3xl font-bold text-center mb-6">Create Account</h1>
+        <p className="text-center text-[#274C77]/80 mb-8">
+          User Registration
+        </p>
 
-    const [errors, setErrors] = useState({
-        password: "",
-        confirmPassword: "",
-    });
+        <form className="space-y-5">
+          <div>
+            <label className="block text-sm mb-2 font-medium">Full Name</label>
+            <Input
+              type="text"
+              placeholder="Enter your name"
+              className="bg-white/30 border-none rounded-xl focus:ring-2 focus:ring-[#274C77] text-[#274C77]"
+            />
+          </div>
 
-    const [submitError, setSubmitError] = useState("");
+          <div>
+            <label className="block text-sm mb-2 font-medium">Email</label>
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              className="bg-white/30 border-none rounded-xl focus:ring-2 focus:ring-[#274C77] text-[#274C77]"
+            />
+          </div>
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+          <div>
+            <label className="block text-sm mb-2 font-medium">Password</label>
+            <Input
+              type="password"
+              placeholder="Enter your password"
+              className="bg-white/30 border-none rounded-xl focus:ring-2 focus:ring-[#274C77] text-[#274C77]"
+            />
+          </div>
 
-    const validatePassword = (password) => {
-        const minLength = 8;
+          <div>
+            <label className="block text-sm mb-2 font-medium">Confirm Password</label>
+            <Input
+              type="password"
+              placeholder="Confirm your password"
+              className="bg-white/30 border-none rounded-xl focus:ring-2 focus:ring-[#274C77] text-[#274C77]"
+            />
+          </div>
 
-        if (password.length === 0) {
-            return "Password is empty, please set a password having minimum 8 characters";
-        }
+          <Button
+            type="submit"
+            className="w-full mt-4 py-3 rounded-xl text-white font-semibold bg-[#274C77] hover:bg-[#6096BA] transition-all"
+          >
+            Register
+          </Button>
+        </form>
 
-        if (password.length < minLength) {
-            return "Password too small, must be minimum 8 characters";
-        }
-
-        return "";
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        const passwordError = validatePassword(formData.password);
-
-        if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = "Passwords don't match!";
-        }
-
-        if (passwordError) newErrors.password = passwordError;
-
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleInputChange = (event) => {
-        const { name, value } = event.target;
-        setFormData({ ...formData, [name]: value });
-        const newErrors = { ...errors };
-        delete newErrors[name];
-        setErrors(newErrors);
-    };
-
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
-        if (!validateForm()) return;
-
-        setIsSubmitting(true);
-
-        setSubmitError("");
-
-        try {
-            const response = await fetch("url");
-
-            if (!response.ok) {
-                throw new Error("Registration failed: " + response.status);
-            }
-
-            const data = await response.json();
-
-            console.log("Registration successful!", data);
-        } catch (error) {
-            console.error("Registration failed!", error);
-            setSubmitError(error.message);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <div
-            style={{ maxWidth: "400px", margin: "50px auto", padding: "20px" }}
-        >
-            <h2>User Registration</h2>
-
-            {submitError && (
-                <div style={{ color: "red", marginBottom: "10px" }}>
-                    {submitError}
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: "15px" }}>
-                    <label htmlFor="userName">User Name:</label>
-
-                    <input
-                        type="text"
-                        id="userName"
-                        name="userName"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginTop: "5px",
-                        }}
-                    />
-                </div>
-
-                <div style={{ marginBottom: "15px" }}>
-                    <label htmlFor="password">password:</label>
-
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginTop: "5px",
-                        }}
-                    />
-
-                    {errors.password && (
-                        <div style={{ color: "red" }}>{errors.password}</div>
-                    )}
-                </div>
-
-                <div style={{ marginBottom: "15px" }}>
-                    <label htmlFor="password">Confirm password:</label>
-
-                    <input
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        style={{
-                            width: "100%",
-                            padding: "8px",
-                            marginTop: "5px",
-                        }}
-                    />
-
-                    {errors.confirmPassword && (
-                        <div style={{ color: "red" }}>
-                            {errors.confirmPassword}
-                        </div>
-                    )}
-                </div>
-
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    style={{
-                        width: "100%",
-                        padding: "10px",
-                        backgroundColor: isSubmitting ? "#ccc" : "#007bff",
-                        color: "white",
-                        border: "none",
-                        cursor: isSubmitting ? "not-allowed" : "pointer",
-                    }}
-                >
-                    {isSubmitting ? "Registering..." : "Register"}
-                </button>
-            </form>
-
-            <p style={{ marginTop: "15px", textAlign: "center" }}>
-                Already have an account? <Link to="/login">Login here</Link>
-            </p>
+        <div className="mt-8 text-center text-sm text-[#274C77]/70">
+          Already have an account? <Link to="/" className="underline font-medium">Sign in</Link>
         </div>
-    );
+      </motion.div>
+    </div>
+  );
 }
-
-export default RegistrationScreen;

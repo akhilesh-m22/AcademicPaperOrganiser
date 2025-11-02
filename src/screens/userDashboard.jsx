@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 export default function UserDashboard() {
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const papers = [
@@ -81,44 +83,54 @@ export default function UserDashboard() {
         </div>
 
         <div className="mt-8 flex justify-center">
-          <button className="px-6 py-3 bg-[#274C77] hover:bg-[#6096BA] text-white rounded-full font-semibold shadow-md transition-all">
+          <button 
+            onClick={() => navigate('/add-paper')}
+            className="px-6 py-3 bg-[#274C77] hover:bg-[#6096BA] text-white rounded-full font-semibold shadow-md transition-all"
+          >
             ➕ Add Paper
           </button>
         </div>
       </motion.section>
 
-      {/* Sidebar */}
+      {/* Sidebar with Backdrop */}
       <AnimatePresence>
         {menuOpen && (
-          <motion.aside
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ duration: 0.3 }}
-            className="fixed top-0 right-0 h-full w-64 backdrop-blur-2xl bg-white/30 border-l border-white/40 shadow-2xl flex flex-col p-6 text-[#274C77] z-50"
-          >
-            <div className="flex justify-between items-center mb-10">
-              <div className="font-bold text-lg">Menu</div>
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="text-2xl hover:text-[#6096BA] transition"
-              >
-                ←
-              </button>
-            </div>
+          <>
+            {/* Backdrop - Click outside to close */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setMenuOpen(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            />
+            
+            {/* Sidebar */}
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.3 }}
+              className="fixed top-0 right-0 h-full w-64 backdrop-blur-2xl bg-white/30 border-l border-white/40 shadow-2xl flex flex-col p-6 text-[#274C77] z-50"
+            >
+              <div className="mb-10">
+                <div className="font-bold text-lg">Menu</div>
+              </div>
 
-            <nav className="flex flex-col gap-6">
-              <a href="#" className="text-lg font-medium hover:text-[#6096BA] transition">
-                My Papers
-              </a>
-              <a href="#" className="text-lg font-medium hover:text-[#6096BA] transition">
-                Settings
-              </a>
-              <a href="#" className="text-lg font-medium text-red-500 hover:text-red-400 transition mt-auto">
-                Logout
-              </a>
-            </nav>
-          </motion.aside>
+              <nav className="flex flex-col gap-6">
+                <a href="#" className="text-lg font-medium hover:text-[#6096BA] transition">
+                  My Papers
+                </a>
+                <a href="#" className="text-lg font-medium hover:text-[#6096BA] transition">
+                  Settings
+                </a>
+                <a href="#" className="text-lg font-medium text-red-500 hover:text-red-400 transition mt-auto">
+                  Logout
+                </a>
+              </nav>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
     </div>

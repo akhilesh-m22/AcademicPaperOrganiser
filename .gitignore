@@ -25,7 +25,3 @@ dist-ssr
 
 AcademicPaperOrganiser.sql
 eslint.config.js
-index.html
-package.json
-package-lock.json
-vite.config.js

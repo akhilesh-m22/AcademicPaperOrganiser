@@ -1,17 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
+import { fetchPapers } from "@/lib/api";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [papers, setPapers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
-  const papers = [
-    { title: "Deep Learning for NLP", author: "Smith et al.", tags: "AI, NLP", year: 2023 },
-    { title: "Blockchain in Education", author: "Doe et al.", tags: "Blockchain, EdTech", year: 2022 },
-    { title: "Climate Change Analytics", author: "Rao et al.", tags: "Environment, Data", year: 2024 },
-    { title: "Quantum Computing Trends", author: "Patel et al.", tags: "Quantum, ML", year: 2023 },
-  ];
+  useEffect(() => {
+    // Check if user is logged in
+    const token = localStorage.getItem('api_token');
+    if (!token) {
+      navigate('/');
+      return;
+    }
+    loadPapers();
+  }, []);
+
+  const loadPapers = () => {
+    let mounted = true;
+    setLoading(true);
+    fetchPapers().then(data => {
+      if (!mounted) return;
+      setPapers(Array.isArray(data) ? data : []);
+      setLoading(false);
+    }).catch(err => { if (mounted) { setError('Failed to load'); setLoading(false); } });
+    return () => { mounted = false; };
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchKeyword.trim()) {
+      loadPapers();
+      return;
+    }
+    setLoading(true);
+    try {
+      const { searchPapers } = await import('@/lib/api');
+      const data = await searchPapers(searchKeyword);
+      setPapers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError('Search failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#E7ECEF] via-[#A3CEF1] to-[#6096BA] text-[#274C77] p-6 overflow-hidden relative">
@@ -23,20 +60,33 @@ export default function UserDashboard() {
         className="flex justify-between items-center backdrop-blur-xl bg-white/20 border border-white/30 rounded-2xl shadow-md px-6 py-4 mb-8"
       >
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/dashboard')}
           className="font-bold text-2xl hover:text-[#6096BA] transition cursor-pointer"
         >
           📚 Academic Paper Organizer
         </button>
-        <div className="flex items-center gap-3">
+        <form onSubmit={handleSearch} className="flex items-center gap-3">
           <input
             type="text"
             placeholder="Search papers..."
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
             className="px-4 py-2 rounded-xl bg-white/30 border-none outline-none focus:ring-2 focus:ring-[#274C77] placeholder-[#274C77]/70"
           />
-          <button className="px-4 py-2 bg-[#274C77] hover:bg-[#6096BA] text-white rounded-xl font-semibold transition-all">
+          <button type="submit" className="px-4 py-2 bg-[#274C77] hover:bg-[#6096BA] text-white rounded-xl font-semibold transition-all">
             Search
           </button>
+          {searchKeyword && (
+            <button 
+              type="button"
+              onClick={() => { setSearchKeyword(''); loadPapers(); }}
+              className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-xl font-semibold transition-all"
+            >
+              Clear
+            </button>
+          )}
+        </form>
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setMenuOpen(true)}
             className="ml-3 text-2xl font-bold text-[#274C77] hover:text-[#6096BA] transition"
@@ -67,18 +117,18 @@ export default function UserDashboard() {
               </tr>
             </thead>
             <tbody>
-              {papers.map((paper, idx) => (
+              { (loading ? [] : papers).map((paper, idx) => (
                 <tr
                   key={idx}
                   className="border-t border-white/40 hover:bg-white/10 transition"
                 >
                   <td className="p-3">{paper.title}</td>
-                  <td className="p-3">{paper.author}</td>
-                  <td className="p-3">{paper.tags}</td>
-                  <td className="p-3">{paper.year}</td>
+                  <td className="p-3">{paper.authors || ''}</td>
+                  <td className="p-3">{paper.tags || ''}</td>
+                  <td className="p-3">{paper.year || ''}</td>
                   <td className="p-3 text-center">
                     <button 
-                      onClick={() => navigate(`/papers/${idx}`)}
+                      onClick={() => navigate(`/papers/${paper.id}`)}
                       className="px-4 py-2 rounded-xl bg-[#A3CEF1] hover:bg-[#6096BA] text-[#274C77] font-semibold transition-all"
                     >
                       View Detail
@@ -130,12 +180,19 @@ export default function UserDashboard() {
                 <Link to="/my-papers" className="text-lg font-medium hover:text-[#6096BA] transition">
                   My Papers
                 </Link>
-                <a href="#" className="text-lg font-medium hover:text-[#6096BA] transition">
-                  Settings
-                </a>
-                <a href="#" className="text-lg font-medium text-red-500 hover:text-red-400 transition mt-auto">
+                <Link to="/add-paper" className="text-lg font-medium hover:text-[#6096BA] transition">
+                  Add Paper
+                </Link>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('api_token');
+                    localStorage.removeItem('user');
+                    navigate('/');
+                  }}
+                  className="text-lg font-medium text-red-500 hover:text-red-400 transition mt-auto text-left"
+                >
                   Logout
-                </a>
+                </button>
               </nav>
             </motion.aside>
           </>

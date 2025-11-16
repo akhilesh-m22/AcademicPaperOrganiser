@@ -7,6 +7,7 @@ CREATE TABLE Users (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE NOT NULL,
     password VARCHAR(255) DEFAULT NULL,
+    is_admin BOOLEAN DEFAULT FALSE,
     paper_count INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -393,6 +394,7 @@ BEGIN
        OR p.abstract LIKE CONCAT('%', p_keyword, '%')
        OR a.name LIKE CONCAT('%', p_keyword, '%')
        OR t.name LIKE CONCAT('%', p_keyword, '%')
+       OR CAST(p.year AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', p_keyword, '%')
     GROUP BY p.id
     ORDER BY p.added_at DESC;
 END;

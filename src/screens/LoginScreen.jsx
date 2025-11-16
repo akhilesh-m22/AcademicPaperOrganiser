@@ -80,6 +80,15 @@ export default function LoginScreen() {
         <div className="mt-8 text-center text-sm text-[#274C77]/70">
           Don't have an account? <Link to="/register" className="underline font-medium hover:text-[#6096BA]">Sign up</Link>
         </div>
+
+        <div className="mt-4 text-center">
+          <Link 
+            to="/admin/login" 
+            className="text-sm text-[#274C77] hover:text-[#6096BA] font-medium underline"
+          >
+            Login as Admin
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

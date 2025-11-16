@@ -28,6 +28,23 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// Admin auth middleware
+function adminMiddleware(req, res, next) {
+  const auth = req.headers.authorization;
+  if (!auth) return res.status(401).json({ error: 'Missing auth token' });
+  const parts = auth.split(' ');
+  if (parts.length !== 2 || parts[0] !== 'Bearer') return res.status(401).json({ error: 'Invalid auth format' });
+  const token = parts[1];
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (!payload.is_admin) return res.status(403).json({ error: 'Admin access required' });
+    req.user = payload;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
 // Register with validation - WARNING: Storing plain text passwords (NOT SECURE - for testing only)
 app.post('/api/auth/register',
   [
@@ -65,14 +82,14 @@ app.post('/api/auth/login',
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     const { email, password } = req.body;
     try {
-      const [rows] = await db.query('SELECT id, name, email, password FROM Users WHERE email = ?', [email]);
+      const [rows] = await db.query('SELECT id, name, email, password, is_admin FROM Users WHERE email = ?', [email]);
       if (!rows.length) return res.status(400).json({ error: 'Invalid credentials' });
       const user = rows[0];
       // Plain text password comparison (INSECURE - for testing only)
       const ok = password === user.password;
       if (!ok) return res.status(400).json({ error: 'Invalid credentials' });
-      const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-      res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+      const token = jwt.sign({ id: user.id, email: user.email, is_admin: user.is_admin }, JWT_SECRET, { expiresIn: '7d' });
+      res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_admin: user.is_admin } });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Server error' });
@@ -311,6 +328,175 @@ app.get('/api/statistics', async (req, res) => {
   try {
     const [rows] = await db.query('CALL GetPaperStatistics()');
     res.json(rows[0][0] || {});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ==================== ADMIN ROUTES ====================
+
+// Get all users (admin only)
+app.get('/api/admin/users', adminMiddleware, async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT id, name, email, paper_count, is_admin, created_at FROM Users ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get single user (admin only)
+app.get('/api/admin/users/:id', adminMiddleware, async (req, res) => {
+  const userId = Number(req.params.id);
+  try {
+    const [[user]] = await db.query('SELECT id, name, email, paper_count, is_admin, created_at FROM Users WHERE id = ?', [userId]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Create user (admin only)
+app.post('/api/admin/users', adminMiddleware,
+  [
+    body('name').isLength({ min: 2 }).withMessage('Name is required'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    body('password').isLength({ min: 6 }).withMessage('Password min length 6')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    const { name, email, password } = req.body;
+    try {
+      const [existing] = await db.query('SELECT id FROM Users WHERE email = ?', [email]);
+      if (existing.length) return res.status(400).json({ error: 'Email already exists' });
+      
+      const [result] = await db.query('INSERT INTO Users (name, email, password) VALUES (?, ?, ?)', [name, email, password]);
+      res.status(201).json({ id: result.insertId, name, email });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+// Update user (admin only)
+app.put('/api/admin/users/:id', adminMiddleware,
+  [
+    body('name').isLength({ min: 2 }).withMessage('Name is required'),
+    body('email').isEmail().withMessage('Valid email is required')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const userId = Number(req.params.id);
+    const { name, email, password } = req.body;
+    
+    try {
+      const [[user]] = await db.query('SELECT id FROM Users WHERE id = ?', [userId]);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      
+      // Check if email is taken by another user
+      const [existing] = await db.query('SELECT id FROM Users WHERE email = ? AND id != ?', [email, userId]);
+      if (existing.length) return res.status(400).json({ error: 'Email already exists' });
+      
+      // Update with or without password
+      if (password && password.length >= 6) {
+        await db.query('UPDATE Users SET name = ?, email = ?, password = ? WHERE id = ?', [name, email, password, userId]);
+      } else {
+        await db.query('UPDATE Users SET name = ?, email = ? WHERE id = ?', [name, email, userId]);
+      }
+      
+      res.json({ success: true, message: 'User updated successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+// Delete user (admin only)
+app.delete('/api/admin/users/:id', adminMiddleware, async (req, res) => {
+  const userId = Number(req.params.id);
+  
+  try {
+    const [[user]] = await db.query('SELECT id, is_admin FROM Users WHERE id = ?', [userId]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (user.is_admin) return res.status(403).json({ error: 'Cannot delete admin user' });
+    
+    await db.query('DELETE FROM Users WHERE id = ?', [userId]);
+    res.json({ success: true, message: 'User deleted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get all papers (admin only)
+app.get('/api/admin/papers', adminMiddleware, async (req, res) => {
+  try {
+    const [papers] = await db.query(`
+      SELECT p.id, p.title, p.abstract, p.year, p.url, p.pdf_key, p.added_by, p.added_at, p.updated_at,
+             u.name as added_by_name,
+             GROUP_CONCAT(DISTINCT a.name SEPARATOR ', ') AS authors,
+             GROUP_CONCAT(DISTINCT t.name SEPARATOR ', ') AS tags
+      FROM Papers p
+      LEFT JOIN Users u ON p.added_by = u.id
+      LEFT JOIN Paper_Authors pa ON p.id = pa.paper_id
+      LEFT JOIN Authors a ON pa.author_id = a.id
+      LEFT JOIN Paper_Tags pt ON p.id = pt.paper_id
+      LEFT JOIN Tags t ON pt.tags_id = t.id
+      GROUP BY p.id
+      ORDER BY p.added_at DESC
+    `);
+    res.json(papers);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Update paper (admin only - no ownership check)
+app.put('/api/admin/papers/:id', adminMiddleware,
+  [ body('title').isLength({ min: 1 }).withMessage('Title is required') ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    
+    const paperId = Number(req.params.id);
+    const { title, abstract, year, url, pdf_key } = req.body;
+    
+    try {
+      const [[paper]] = await db.query('SELECT id FROM Papers WHERE id = ?', [paperId]);
+      if (!paper) return res.status(404).json({ error: 'Paper not found' });
+      
+      await db.query('CALL UpdatePaper(?, ?, ?, ?, ?, ?)',
+        [paperId, title, abstract || null, year || null, url || null, pdf_key || null]);
+      
+      res.json({ success: true, message: 'Paper updated successfully' });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
+
+// Delete paper (admin only - no ownership check)
+app.delete('/api/admin/papers/:id', adminMiddleware, async (req, res) => {
+  const paperId = Number(req.params.id);
+  
+  try {
+    const [[paper]] = await db.query('SELECT id FROM Papers WHERE id = ?', [paperId]);
+    if (!paper) return res.status(404).json({ error: 'Paper not found' });
+    
+    await db.query('CALL DeletePaper(?)', [paperId]);
+    
+    res.json({ success: true, message: 'Paper deleted successfully' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

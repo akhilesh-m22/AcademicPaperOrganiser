@@ -5,9 +5,13 @@ A full-stack web application for organizing and managing academic research paper
 ## Features ✨
 
 - **User Authentication**: Secure registration and login with JWT tokens
-- **Paper Management**: Add, view, and organize academic papers
+- **Admin Portal**: Dedicated admin login with full system management capabilities
+- **User Management**: Admin can add, edit, and delete user accounts
+- **Paper Management**: Add, view, edit, and organize academic papers
+- **Admin Dashboard**: Manage all users and papers with CRUD operations
 - **Author & Tag System**: Link papers with authors and categorize with tags
 - **References Tracking**: Maintain paper citations and references
+- **Search by Year**: Search papers by publication year
 - **User Dashboard**: View all papers and personal collections
 - **Responsive UI**: Modern, glassmorphic design with Tailwind CSS
 
@@ -142,6 +146,8 @@ AcademicPaperOrganiser/
 │   ├── screens/               # Page components
 │   │   ├── LoginScreen.jsx
 │   │   ├── RegistrationScreen.jsx
+│   │   ├── AdminLoginScreen.jsx
+│   │   ├── AdminDashboard.jsx
 │   │   ├── userDashboard.jsx
 │   │   ├── addPaperScreen.jsx
 │   │   ├── userPapersScreen.jsx
@@ -161,13 +167,26 @@ AcademicPaperOrganiser/
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
+- `POST /api/auth/login` - Login user (returns is_admin flag)
 
 ### Papers
 - `GET /api/papers` - Get all papers
 - `GET /api/papers/:id` - Get single paper details
 - `POST /api/papers` - Create new paper (requires auth)
+- `PUT /api/papers/:id` - Update paper (requires auth, owner only)
+- `DELETE /api/papers/:id` - Delete paper (requires auth, owner only)
+- `GET /api/papers/search/:keyword` - Search papers by keyword or year
 - `GET /api/users/:id/papers` - Get user's papers
+
+### Admin Endpoints (require admin token)
+- `GET /api/admin/users` - Get all users
+- `GET /api/admin/users/:id` - Get single user
+- `POST /api/admin/users` - Create new user
+- `PUT /api/admin/users/:id` - Update user
+- `DELETE /api/admin/users/:id` - Delete user (cannot delete admin)
+- `GET /api/admin/papers` - Get all papers with user details
+- `PUT /api/admin/papers/:id` - Update any paper
+- `DELETE /api/admin/papers/:id` - Delete any paper
 
 ### Tags & Authors
 - `GET /api/tags` - Get all tags
@@ -185,17 +204,29 @@ The database includes:
 
 The SQL script includes sample data:
 - 5 Users
+- 1 Admin User (email: `admin@example.com`, password: `password123`)
 - 5 Authors
 - 5 Tags
 - 5 Papers with associated authors, tags, and references
 
 ## Usage Guide 📖
 
-### First Time Setup
+### Regular User
 1. Register a new account at `/register`
-2. Login with your credentials
+2. Login with your credentials at `/login`
 3. Browse existing papers on the dashboard
 4. Add your own papers using the "Add Paper" button
+5. Search papers by title, author, tags, or year
+
+### Admin User
+1. Click "Login as Admin" on the login page
+2. Login with admin credentials:
+   - **Email**: `admin@example.com`
+   - **Password**: `password123`
+3. Access the admin dashboard with two tabs:
+   - **Users Management**: Add, edit, delete users
+   - **Papers Management**: Edit, delete any paper in the system
+4. Admin cannot delete other admin accounts (protected)
 
 ### Adding a Paper
 - Fill in the title (required)
@@ -236,20 +267,24 @@ The SQL script includes sample data:
 
 The main SQL file (`server/sql/AcademicPaperOrganiser.sql`) now includes:
 - `password` column in Users table (VARCHAR(255))
+- `is_admin` column in Users table (BOOLEAN, default FALSE)
 - `paper_count` column in Users table (INT, auto-incremented by trigger)
+- Year-based search functionality in SearchPapers stored procedure
 - All necessary triggers, procedures, and functions
 
-**Note**: The `init.sql` migration file is no longer needed as the main SQL file includes all schema changes.
+**Note**: The `init.sql` migration file is kept for reference, but the main SQL file includes all schema changes.
 
 ## Future Enhancements 🚀
 
+- [x] Admin dashboard ✅
+- [x] Paper editing functionality ✅
+- [x] Search by year ✅
 - [ ] File upload for PDFs
 - [ ] Advanced search and filtering
 - [ ] Paper recommendations
 - [ ] Export citations
-- [ ] Admin dashboard
 - [ ] Email verification
-- [ ] Paper editing functionality
+- [ ] User profile management
 
 ## License 📄
 

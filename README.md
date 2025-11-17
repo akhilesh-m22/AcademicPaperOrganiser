@@ -54,21 +54,29 @@ cd AcademicPaperOrganiser
 
 2. **Open MySQL Workbench** or MySQL command line
 
-3. **Run the main SQL file** to create database and tables:
+3. **IMPORTANT: Drop existing database if you're re-setting up**:
+   ```sql
+   DROP DATABASE IF EXISTS AcademicPaperOrganiser;
+   ```
+
+4. **Run the main SQL file** to create database and tables:
    ```bash
    mysql -u root -p < server/sql/AcademicPaperOrganiser.sql
    ```
    
    Or in MySQL Workbench:
    - Open `server/sql/AcademicPaperOrganiser.sql`
-   - Execute the entire script (this will create the database, tables, triggers, procedures, and sample data)
+   - Execute the entire script (this will create the database, tables, triggers, procedures, and sample data including admin user)
 
-4. **Verify the setup**:
+5. **Verify the setup**:
    ```sql
    USE AcademicPaperOrganiser;
    SHOW TABLES;
    SELECT * FROM Users;
+   -- You should see 6 users including admin@example.com with is_admin = 1
    ```
+
+**CRITICAL**: The admin user is created automatically by the SQL script. If you don't see the admin user or if `is_admin` column is missing, you ran an old version of the SQL file. Drop the database and re-run the latest `server/sql/AcademicPaperOrganiser.sql` file.
 
 ### 3. Backend Setup
 

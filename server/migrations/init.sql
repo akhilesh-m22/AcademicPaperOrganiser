@@ -1,25 +1,25 @@
 /*
-  Migration: add password column to Users.
-  - This file is intentionally small and intended to be run AFTER importing
-    the main SQL file located at `server/sql/AcademicPaperOrganiser.sql`.
-
-  Notes on portability:
-  - Older MySQL versions do not support `IF NOT EXISTS` on ALTER TABLE or
-    CREATE INDEX. To keep this migration simple and compatible, the ALTER
-    statement below will attempt to add the `password` column. If the column
-    already exists, most clients will show an error which can be safely
-    ignored.
-  - The `email` column in the original schema is created as `UNIQUE`, so an
-    index already exists for it; creating another index will fail. Do not
-    create a duplicate index here.
-
-  If you prefer a no-error approach for your MySQL version, open a SQL client
-  (MySQL Workbench) and run the following only if the `password` column is
-  not present:
-
-    ALTER TABLE Users ADD COLUMN password VARCHAR(255) DEFAULT NULL;
-
+  IMPORTANT: This migration file is NOT needed if you run the main SQL file.
+  
+  The main SQL file is located at: server/sql/AcademicPaperOrganiser.sql
+  
+  That file contains the complete database schema including:
+  - All tables (Users, Papers, Authors, Tags, etc.)
+  - The password column (VARCHAR(255))
+  - The is_admin column (BOOLEAN DEFAULT FALSE)
+  - All triggers, stored procedures, and functions
+  - Sample data including the admin user
+  
+  TO SET UP THE DATABASE:
+  1. Open MySQL Workbench or MySQL command line
+  2. Run the complete SQL file: server/sql/AcademicPaperOrganiser.sql
+  3. Do NOT run this init.sql file - it's kept only for reference
+  
+  The admin user credentials are:
+  - Email: admin@example.com
+  - Password: password123
+  - is_admin: TRUE
 */
 
--- Try to add password column (may error if already present; safe to ignore)
-ALTER TABLE Users ADD COLUMN password VARCHAR(255) DEFAULT NULL;
+-- This file is intentionally left empty.
+-- Use server/sql/AcademicPaperOrganiser.sql instead.

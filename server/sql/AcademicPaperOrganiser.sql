@@ -68,12 +68,13 @@ CREATE TABLE Paper_Tags (
 
 -- Insert Users
 -- WARNING: Plain text passwords - NOT SECURE (for testing only)
-INSERT INTO Users (name, email, password) VALUES
-('Alice Johnson', 'alice.johnson@example.com', 'pass123'),
-('Bob Smith', 'bob.smith@example.com', 'pass123'),
-('Catherine Lee', 'catherine.lee@example.com', 'pass123'),
-('David Kumar', 'david.kumar@example.com', 'pass123'),
-('Emily Brown', 'emily.brown@example.com', 'pass123');
+INSERT INTO Users (name, email, password, is_admin) VALUES
+('Admin', 'admin@example.com', 'password123', TRUE),
+('Alice Johnson', 'alice.johnson@example.com', 'pass123', FALSE),
+('Bob Smith', 'bob.smith@example.com', 'pass123', FALSE),
+('Catherine Lee', 'catherine.lee@example.com', 'pass123', FALSE),
+('David Kumar', 'david.kumar@example.com', 'pass123', FALSE),
+('Emily Brown', 'emily.brown@example.com', 'pass123', FALSE);
 
 -- Insert Authors
 INSERT INTO Authors (name, qualification, institute) VALUES
@@ -93,11 +94,11 @@ INSERT INTO Tags (name) VALUES
 
 -- Insert Papers
 INSERT INTO Papers (title, abstract, year, url, pdf_key, added_by) VALUES
-('Deep Learning for Medical Imaging', 'This paper explores the use of CNNs in detecting tumors.', 2021, 'https://example.com/deep-medical', 'deep_medical.pdf', 1),
-('Quantum Algorithms for Optimization', 'Study on quantum algorithms improving optimization.', 2020, 'https://example.com/quantum-opt', 'quantum_opt.pdf', 2),
-('Big Data in Climate Change', 'Analyzing the role of big data in climate change predictions.', 2019, 'https://example.com/bigdata-climate', 'bigdata_climate.pdf', 3),
-('Graph Algorithms in Social Networks', 'Graph theory applied to detect communities in networks.', 2022, 'https://example.com/graph-social', 'graph_social.pdf', 4),
-('Advances in Particle Physics', 'Experimental results from CERN in particle collisions.', 2021, 'https://example.com/particle-physics', 'particle_physics.pdf', 5);
+('Deep Learning for Medical Imaging', 'This paper explores the use of CNNs in detecting tumors.', 2021, 'https://example.com/deep-medical', 'deep_medical.pdf', 2),
+('Quantum Algorithms for Optimization', 'Study on quantum algorithms improving optimization.', 2020, 'https://example.com/quantum-opt', 'quantum_opt.pdf', 3),
+('Big Data in Climate Change', 'Analyzing the role of big data in climate change predictions.', 2019, 'https://example.com/bigdata-climate', 'bigdata_climate.pdf', 4),
+('Graph Algorithms in Social Networks', 'Graph theory applied to detect communities in networks.', 2022, 'https://example.com/graph-social', 'graph_social.pdf', 5),
+('Advances in Particle Physics', 'Experimental results from CERN in particle collisions.', 2021, 'https://example.com/particle-physics', 'particle_physics.pdf', 6);
 
 -- Insert Paper_Authors
 INSERT INTO Paper_Authors (paper_id, author_id) VALUES

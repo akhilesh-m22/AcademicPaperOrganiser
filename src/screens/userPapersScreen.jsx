@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { fetchUserPapers } from "@/lib/api";
+import { fetchUserPapers, countUserPapers } from "@/lib/api";
 
 export default function MyPapers() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ export default function MyPapers() {
   const [userPapers, setUserPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [paperCount, setPaperCount] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('api_token');
@@ -28,6 +29,11 @@ export default function MyPapers() {
       setUserPapers(Array.isArray(data) ? data : []);
       setLoading(false);
     }).catch(() => { setUserPapers([]); setLoading(false); });
+    
+    // Fetch paper count using DB function
+    countUserPapers(user.id).then(d => {
+      if (d && typeof d.count !== 'undefined') setPaperCount(d.count);
+    }).catch(() => {});
   }, []);
 
   const handleLogout = () => {
@@ -124,7 +130,10 @@ export default function MyPapers() {
         transition={{ duration: 0.6 }}
         className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 flex-1 overflow-x-auto"
       >
-        <h2 className="text-2xl font-bold text-center mb-6">My Papers</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">My Papers</h2>
+          <div className="text-sm text-[#274C77]/80">Total Papers: <strong>{paperCount !== null ? paperCount : '—'}</strong></div>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">

@@ -227,12 +227,20 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
             <p className="text-white/70 mt-1">Manage users and papers</p>
           </div>
-          <Button
-            onClick={handleLogout}
-            className="bg-red-500 hover:bg-red-600 text-white"
-          >
-            Logout
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={() => navigate('/analytics')}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              📊 Analytics
+            </Button>
+            <Button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Tabs */}

@@ -7,6 +7,7 @@ import UserDashboard from "./screens/userDashboard";
 import AddPaper from "./screens/addPaperScreen";
 import MyPapers from "./screens/userPapersScreen";
 import PaperDetails from "./screens/paperDetailsScreen";
+import AnalyticsScreen from "./screens/AnalyticsScreen";
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
                 <Route path="/add-paper" element={<AddPaper />} />
                 <Route path="/my-papers" element={<MyPapers />} />
                 <Route path="/papers/:id" element={<PaperDetails />} />
+                <Route path="/analytics" element={<AnalyticsScreen />} />
             </Routes>
         </BrowserRouter>
     );

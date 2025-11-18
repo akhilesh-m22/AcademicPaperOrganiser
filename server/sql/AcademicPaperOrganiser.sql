@@ -67,7 +67,6 @@ CREATE TABLE Paper_Tags (
 );
 
 -- Insert Users
--- WARNING: Plain text passwords - NOT SECURE (for testing only)
 INSERT INTO Users (name, email, password, is_admin) VALUES
 ('Admin', 'admin@example.com', 'password123', TRUE),
 ('Alice Johnson', 'alice.johnson@example.com', 'pass123', FALSE),

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
-import { fetchPapers } from "@/lib/api";
+import { fetchPapers, getRecentPapersCount } from "@/lib/api";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [recentCount, setRecentCount] = useState(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -19,6 +20,10 @@ export default function UserDashboard() {
       return;
     }
     loadPapers();
+    // fetch recent papers count (last 7 days)
+    getRecentPapersCount(7).then(d => {
+      if (d && typeof d.count !== 'undefined') setRecentCount(d.count);
+    }).catch(() => {});
   }, []);
 
   const loadPapers = () => {
@@ -103,7 +108,10 @@ export default function UserDashboard() {
         transition={{ duration: 0.6 }}
         className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl shadow-2xl p-8 flex-1 overflow-x-auto"
       >
-        <h2 className="text-2xl font-bold text-center mb-6">Recent Papers</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-center">Recent Papers</h2>
+          <div className="text-sm text-[#274C77]/80">Last 7 days: <strong>{recentCount !== null ? recentCount : '—'}</strong></div>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse">
@@ -182,6 +190,9 @@ export default function UserDashboard() {
                 </Link>
                 <Link to="/add-paper" className="text-lg font-medium hover:text-[#6096BA] transition">
                   Add Paper
+                </Link>
+                <Link to="/analytics" className="text-lg font-medium hover:text-[#6096BA] transition">
+                  📊 Analytics
                 </Link>
                 <button 
                   onClick={() => {

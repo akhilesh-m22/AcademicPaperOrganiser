@@ -503,6 +503,89 @@ app.delete('/api/admin/papers/:id', adminMiddleware, async (req, res) => {
   }
 });
 
+// Count papers for a user (uses DB function CountUserPapers)
+app.get('/api/functions/count-user-papers/:id', async (req, res) => {
+  const userId = Number(req.params.id);
+  if (!userId) return res.status(400).json({ error: 'Invalid id' });
+  try {
+    const [rows] = await db.query('SELECT CountUserPapers(?) AS count', [userId]);
+    const count = rows && rows[0] && (rows[0].count !== undefined ? rows[0].count : rows[0]['CountUserPapers(?)']) ? (rows[0].count !== undefined ? rows[0].count : rows[0]['CountUserPapers(?)']) : 0;
+    res.json({ count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get recent papers count (uses DB function GetRecentPapersCount)
+app.get('/api/functions/recent-papers/:days', async (req, res) => {
+  const days = Number(req.params.days) || 7;
+  try {
+    const [rows] = await db.query('SELECT GetRecentPapersCount(?) AS count', [days]);
+    const count = rows && rows[0] && (rows[0].count !== undefined ? rows[0].count : rows[0]['GetRecentPapersCount(?)']) ? (rows[0].count !== undefined ? rows[0].count : rows[0]['GetRecentPapersCount(?)']) : 0;
+    res.json({ count });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get paper statistics grouped by year
+app.get('/api/queries/papers-by-year', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        p.year,
+        COUNT(p.id) AS paper_count,
+        COUNT(DISTINCT pa.author_id) AS unique_authors,
+        COUNT(DISTINCT pt.tags_id) AS unique_tags,
+        GROUP_CONCAT(DISTINCT u.name SEPARATOR ', ') AS contributors
+      FROM Papers p
+      LEFT JOIN Paper_Authors pa ON p.id = pa.paper_id
+      LEFT JOIN Paper_Tags pt ON p.id = pt.paper_id
+      LEFT JOIN Users u ON p.added_by = u.id
+      WHERE p.year IS NOT NULL
+      GROUP BY p.year
+      ORDER BY p.year DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get papers with more authors than average
+app.get('/api/queries/papers-with-many-authors', async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        p.id,
+        p.title,
+        p.year,
+        COUNT(pa.author_id) AS author_count,
+        GROUP_CONCAT(a.name SEPARATOR ', ') AS authors
+      FROM Papers p
+      INNER JOIN Paper_Authors pa ON p.id = pa.paper_id
+      INNER JOIN Authors a ON pa.author_id = a.id
+      GROUP BY p.id, p.title, p.year
+      HAVING COUNT(pa.author_id) > (
+        SELECT AVG(author_count)
+        FROM (
+          SELECT COUNT(author_id) AS author_count
+          FROM Paper_Authors
+          GROUP BY paper_id
+        ) AS avg_authors
+      )
+      ORDER BY author_count DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Start only when run directly (allow importing for tests)
 const PORT = process.env.PORT || 4000;
 if (require.main === module) {

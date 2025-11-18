@@ -103,4 +103,30 @@ export async function fetchStatistics() {
   return res.json();
 }
 
+export async function countUserPapers(userId) {
+  const res = await fetch(`${API_URL}/api/functions/count-user-papers/${userId}`);
+  return res.json();
+}
+
+export async function countPapersByTag(tagName) {
+  const res = await fetch(`${API_URL}/api/functions/count-papers-by-tag/${encodeURIComponent(tagName)}`);
+  return res.json();
+}
+
+export async function getRecentPapersCount(days = 7) {
+  const res = await fetch(`${API_URL}/api/functions/recent-papers/${days}`);
+  return res.json();
+}
+
+// Advanced Queries
+export async function getPapersByYear() {
+  const res = await fetch(`${API_URL}/api/queries/papers-by-year`);
+  return res.json();
+}
+
+export async function getPapersWithManyAuthors() {
+  const res = await fetch(`${API_URL}/api/queries/papers-with-many-authors`);
+  return res.json();
+}
+
 export { getToken, setToken };
